@@ -8,7 +8,13 @@ use App\Models\Services; // Adjust if your model is named differently
 class ServiceController extends Controller
 {
     /**
-     * Display a listing of all services.
+     * @OA\Get(
+     *     path="/api/services",
+     *     tags={"Services"},
+     *     summary="Get all services",
+     *     description="Returns all available services",
+     *     @OA\Response(response="200", description="Success")
+     * )
      */
     public function index()
     {
@@ -17,11 +23,26 @@ class ServiceController extends Controller
     }
 
     /**
-     * Store a newly created service.
+     * @OA\Post(
+     *     path="/api/services",
+     *     tags={"Services"},
+     *     summary="Create a new service",
+     *     description="Stores a new service record",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"service_name", "description", "cost"},
+     *             @OA\Property(property="service_name", type="string", example="Dental Cleaning"),
+     *             @OA\Property(property="description", type="string", example="A thorough cleaning of the teeth"),
+     *             @OA\Property(property="cost", type="number", format="float", example=49.99)
+     *         )
+     *     ),
+     *     @OA\Response(response="201", description="Service added successfully"),
+     *     @OA\Response(response="422", description="Invalid data")
+     * )
      */
     public function store(Request $request)
     {
-        // Optionally, validate the incoming request data
         $request->validate([
             'service_name' => 'required|string|max:255',
             'description'  => 'required|string',
@@ -41,7 +62,15 @@ class ServiceController extends Controller
     }
 
     /**
-     * Display the specified service.
+     * @OA\Get(
+     *     path="/api/services/{id}",
+     *     tags={"Services"},
+     *     summary="Get a specific service",
+     *     description="Returns a service by ID",
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Success"),
+     *     @OA\Response(response="404", description="Service not found")
+     * )
      */
     public function show($id)
     {
@@ -50,33 +79,43 @@ class ServiceController extends Controller
         if ($service) {
             return response()->json($service);
         } else {
-            return response()->json([
-                "message" => "Service not found",
-            ], 404);
+            return response()->json(["message" => "Service not found"], 404);
         }
     }
 
     /**
-     * Update the specified service.
+     * @OA\Put(
+     *     path="/api/services/{id}",
+     *     tags={"Services"},
+     *     summary="Update an existing service",
+     *     description="Update an existing service record",
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="service_name", type="string", example="Teeth Whitening"),
+     *             @OA\Property(property="description", type="string", example="Whitening treatment for brighter teeth"),
+     *             @OA\Property(property="cost", type="number", format="float", example=99.99)
+     *         )
+     *     ),
+     *     @OA\Response(response="200", description="Service updated successfully"),
+     *     @OA\Response(response="404", description="Service not found")
+     * )
      */
     public function update(Request $request, $id)
     {
         $service = Services::find($id);
 
         if (!$service) {
-            return response()->json([
-                "message" => "Service not found",
-            ], 404);
+            return response()->json(["message" => "Service not found"], 404);
         }
 
-        // Optionally, validate the incoming data
         $request->validate([
             'service_name' => 'sometimes|required|string|max:255',
             'description'  => 'sometimes|required|string',
             'cost'         => 'sometimes|required|numeric|min:0',
         ]);
 
-        // Update the fields only if they are present in the request
         $service->service_name = $request->input('service_name', $service->service_name);
         $service->description  = $request->input('description', $service->description);
         $service->cost         = $request->input('cost', $service->cost);
@@ -89,22 +128,26 @@ class ServiceController extends Controller
     }
 
     /**
-     * Remove the specified service.
+     * @OA\Delete(
+     *     path="/api/services/{id}",
+     *     tags={"Services"},
+     *     summary="Delete a service",
+     *     description="Deletes a service by ID",
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
+     *     @OA\Response(response="200", description="Service deleted successfully"),
+     *     @OA\Response(response="404", description="Service not found")
+     * )
      */
     public function destroy($id)
     {
         $service = Services::find($id);
 
         if (!$service) {
-            return response()->json([
-                "message" => "Service not found",
-            ], 404);
+            return response()->json(["message" => "Service not found"], 404);
         }
 
         $service->delete();
 
-        return response()->json([
-            "message" => "Service deleted successfully.",
-        ]);
+        return response()->json(["message" => "Service deleted successfully."]);
     }
 }
