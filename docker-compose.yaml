@@ -19,10 +19,3 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
     volumes:
       - './storage:/var/www/html/storage'
-    networks:
-      - denteeth-network
-  
-  # network
-networks:
-  denteeth-network:
-    driver: bridge
